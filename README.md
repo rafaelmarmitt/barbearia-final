@@ -1,107 +1,311 @@
 # Barbearia Agenda
 
-Aplicativo Android em React Native/Expo com API Express, MySQL, cadastro, JWT e dois níveis de acesso. Interface em grafite e cobre, escolhida pelo autor do projeto.
+Aplicativo de agendamento de cortes de cabelo em React Native com Expo, integrado a uma API REST em Node.js e Express e a um banco MySQL. O sistema utiliza autenticação JWT e dois níveis de acesso: cliente e administrador.
 
-Esta entrega contém o projeto e a documentação, **sem APK**, conforme solicitado. A geração e a validação do APK serão feitas posteriormente pelo aluno. O código da autenticação, da API e da agenda está implementado e testado nos escopos descritos em VALIDACAO.md.
+Projeto avaliativo de aplicação mobile com JWT e níveis de usuário.
+
+**Repositório:** [rafaelmarmitt/barbearia-final](https://github.com/rafaelmarmitt/barbearia-final)
+
+## Apresentação
+
+A Barbearia Agenda centraliza a disponibilidade e as reservas de uma barbearia. O cliente consulta vagas, agenda um atendimento e acompanha suas reservas. O administrador organiza os horários e identifica os clientes de cada atendimento.
+
+A interface utiliza grafite e cobre, com destaque para data, hora, disponibilidade e ações de agendamento.
 
 <p>
-  <img src="docs/telas/01-login-mobile.png" width="200" alt="Entrada em grafite e cobre" />
-  <img src="docs/telas/02-agenda-mobile.png" width="200" alt="Horários disponíveis para o cliente" />
-  <img src="docs/telas/04-admin-mobile.png" width="200" alt="Painel administrativo da agenda" />
+  <img src="docs/telas/01-login-mobile.png" width="200" alt="Tela de entrada" />
+  <img src="docs/telas/02-agenda-mobile.png" width="200" alt="Agenda do cliente" />
+  <img src="docs/telas/04-admin-mobile.png" width="200" alt="Painel administrativo" />
 </p>
 
-Capturas da versão web em largura de celular, com dados exclusivos de teste.
+Capturas da versão web em tamanho de celular, com dados de teste.
 
-## Problema e proposta
+## Problema, público e justificativa
 
-Barbearias que organizam atendimentos por mensagens e anotações precisam repetir informações de disponibilidade e podem ter conflitos de horário. Clientes precisam descobrir vagas e confirmar reservas; o responsável precisa acompanhar a agenda e identificar quem será atendido.
+O agendamento por mensagens e anotações dispersas dificulta consultar vagas, acompanhar reservas e evitar conflitos. O cliente precisa entrar em contato para descobrir a disponibilidade, enquanto o responsável precisa atualizar manualmente a agenda e responder a solicitações repetidas.
 
-A solução centraliza as vagas e permite que o próprio cliente reserve e cancele. O administrador abre, consulta, edita e exclui horários livres. Este é um projeto acadêmico; não há pesquisa de campo nem implantação comercial comprovada. A aplicação mantém a proposta original da entrega 1, agora com dados persistentes e autenticação real.
+A proposta é reunir essas informações em uma aplicação compartilhada, permitindo consultar e reservar horários com identificação do cliente e validação da disponibilidade no servidor.
 
-Escopo: um barbeiro, serviço de corte de cabelo e atendimentos de uma hora, sempre em hora cheia. Sem pagamentos, notificações ou múltiplos profissionais. Datas e horários representam o horário civil de São Paulo.
+**Público-alvo:** clientes da barbearia e o responsável pela organização dos atendimentos.
 
-## Funcionalidades e permissões
+**Objetivo geral:** organizar a disponibilidade e as reservas por meio de uma aplicação mobile com autenticação e controle de acesso.
 
-| Ação | Cliente | Administrador |
+**Objetivos específicos:**
+
+- Disponibilizar a consulta de vagas futuras.
+- Permitir cadastro e autenticação dos clientes.
+- Vincular cada reserva ao usuário autenticado.
+- Impedir reservas simultâneas da mesma vaga.
+- Permitir o gerenciamento da agenda pelo administrador.
+- Persistir os dados em MySQL e proteger as operações na API.
+
+## Escopo e regras de negócio
+
+- Uma barbearia com um barbeiro e serviço de corte de cabelo.
+- Atendimentos de uma hora, sempre em hora cheia.
+- A combinação de data e hora identifica uma vaga única.
+- Reservas são permitidas apenas para vagas futuras e livres.
+- O cliente cancela somente a própria reserva, antes do início do atendimento.
+- Horários reservados ficam protegidos contra edição e exclusão.
+- O cadastro público cria apenas clientes; administradores são cadastrados por um comando no servidor.
+- As reservas utilizam o ID do usuário, permitindo clientes com nomes iguais.
+
+A agenda utiliza o horário de São Paulo. Para o uso desta versão, mantenha o aparelho nesse mesmo fuso. Pagamentos, notificações e múltiplos profissionais ficam fora do escopo.
+
+## Tecnologias
+
+| Camada | Tecnologias |
+|---|---|
+| Aplicativo | React Native, Expo SDK 58 e JavaScript |
+| Navegação | React Navigation com Native Stack |
+| Comunicação | fetch e JSON |
+| API | Node.js e Express |
+| Banco | MySQL e mysql2/promise |
+| Autenticação | JWT, Bearer Token e bcryptjs |
+| Armazenamento local | Expo SecureStore e AsyncStorage |
+| Verificação | node:test, Playwright, ESLint e checagem de JavaScript com TypeScript |
+| Build Android | Expo Prebuild, Gradle e EAS Build |
+
+## Perfis e permissões
+
+| Operação | Cliente | Administrador |
 |---|---|---|
-| Cadastro público e login | Sim | Login; criação pelo terminal |
-| Consultar disponibilidade | Sim, vagas livres e próprias reservas | Toda a agenda e nomes de clientes |
-| Reservar | Vaga futura e livre | Não |
-| Cancelar | Somente sua reserva futura | Não |
-| Criar, editar e excluir vaga | Não | Sim; edição/exclusão apenas sem reserva |
-| Ver histórico próprio | Sim | Toda a agenda pelo filtro Todos |
+| Cadastro pelo aplicativo | Sim | Não |
+| Login e logout | Sim | Sim |
+| Consulta da agenda | Vagas livres e próprias reservas | Todos os horários e clientes |
+| Reserva | Vaga futura e livre | Não |
+| Cancelamento | Apenas reserva própria futura | Não |
+| Criação de horário | Não | Sim |
+| Edição e exclusão | Não | Apenas horários livres |
 
-O backend verifica permissões em todas as rotas. Alterar o perfil no aplicativo ou no JSON de cadastro não concede privilégios. IDs de usuários são usados para propriedade; clientes com nomes iguais continuam separados. Duas reservas concorrentes resultam em uma única confirmação.
+O backend verifica o token, consulta o usuário no banco e valida seu nível antes de executar as operações. Ocultar controles na interface não substitui a autorização no servidor.
 
-## Executar do zero
+## Funcionalidades e navegação
 
-Pré-requisitos: Node.js 22.13+ (validado com 24.13.1), npm e MySQL 8.0.16+ rodando. Android: Expo Go compatível com SDK 58 ou build nativo. Para web, navegador atual.
+O cliente pode cadastrar uma conta, entrar, filtrar vagas por data, reservar, consultar seus agendamentos e cancelar com confirmação. O administrador consulta os próximos horários, as reservas e a agenda completa, além de criar, editar e excluir vagas livres.
 
-1. Extraia o projeto e abra o terminal na pasta que contém `package.json`.
-2. Execute `npm ci`.
-3. No MySQL Workbench, conectado como usuário com permissão de criar banco, abra e execute `database/barbearia.sql`. Alternativa em terminal com o cliente MySQL: `mysql -u root -p` e, dentro dele, `SOURCE C:/caminho/database/barbearia.sql;`.
-4. Crie um usuário de aplicação no MySQL e conceda SELECT, INSERT, UPDATE e DELETE nas tabelas de `barbearia_agenda`. Use uma senha local exclusiva; não publique credenciais.
-5. Copie `backend/.env.example` para `backend/.env`; configure host, porta, nome, usuário e senha do MySQL. Gere um segredo com `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` e coloque em JWT_SECRET.
-6. Execute `npm run criar-admin` e informe nome, e-mail e uma senha de pelo menos oito caracteres. Não existe administrador ou senha padrão. A senha digitada aparece no terminal, mas é persistida apenas como hash bcrypt.
-7. Inicie a API com `npm run api`. `http://localhost:3000/saude` deve retornar status ok e banco MySQL.
-8. Em outro terminal, execute `npm start` (Android) ou `npm run web` (navegador).
-9. Na tela de entrada, use **Configurar conexão com a API**. No celular, informe `http://IP-DO-COMPUTADOR:3000`; aparelho e computador precisam estar na mesma rede, com porta 3000 acessível no firewall. No emulador Android padrão, use `http://10.0.2.2:3000`. No navegador deste computador, use `http://localhost:3000`.
-10. Entre como administrador e abra horários futuros. Saia, crie uma conta de cliente e teste a reserva. No segundo perfil, acompanhe a ocupação da agenda.
+As telas incluem atualização manual e ao receber foco, configuração do endereço da API e mensagens de carregamento, erro, sucesso e lista vazia.
 
-Exemplo para o passo 4, executado por um administrador do MySQL (substitua a senha antes de executar):
+```text
+Entrada
+  +-- Criar conta --> Entrada
+  +-- Cliente --> Horários --> Meus agendamentos
+  |                 |                  |
+  |              Reservar           Cancelar
+  +-- Administrador --> Painel administrativo
+                           +-- Abrir horário
+                           +-- Editar vaga livre
+                           +-- Excluir vaga livre
+
+Sair ou receber resposta de sessão inválida --> Entrada
+```
+
+## Arquitetura e banco
+
+```text
+React Native + Navigation
+        |
+        | fetch + JSON + Bearer Token
+        v
+API Express: rotas e middleware
+        |
+        v
+Controllers: validação e regras
+        |
+        v
+Repository: SQL parametrizado
+        |
+        v
+MySQL
+```
+
+O aplicativo não acessa o banco diretamente. A API valida os dados e as permissões e executa as operações de persistência.
+
+| Tabela | Campos principais | Finalidade |
+|---|---|---|
+| usuarios | id, nome, email, senha_hash, nivel, criado_em | Identificação, autenticação e perfil |
+| horarios | id, data, hora, cliente_id, criado_em | Disponibilidade e vínculo de reserva |
+
+Um usuário pode reservar vários horários; um horário possui no máximo um cliente. cliente_id nulo representa uma vaga livre. A reserva é modelada pelo relacionamento entre as tabelas, sem duplicar seu estado.
+
+O esquema utiliza chave estrangeira, índice por cliente, unicidade de data/hora e restrição de hora cheia.
+
+- [Script SQL](database/barbearia.sql).
+- [Requisitos, modelagem e diagrama](docs/ESPECIFICACAO.md).
+
+## API REST
+
+| Método | Rota | Acesso | Operação |
+|---|---|---|---|
+| GET | /saude | Público | Conferir conexão com MySQL |
+| POST | /auth/cadastro | Público | Cadastrar cliente |
+| POST | /auth/login | Público | Validar credenciais e emitir JWT |
+| GET | /auth/me | Autenticado | Consultar sessão |
+| GET | /horarios | Autenticado | Listar conforme o perfil |
+| POST | /horarios | Administrador | Criar horário |
+| PUT | /horarios/:id | Administrador | Editar vaga livre |
+| DELETE | /horarios/:id | Administrador | Excluir vaga livre |
+| POST | /horarios/:id/reserva | Cliente | Reservar vaga |
+| DELETE | /horarios/:id/reserva | Cliente | Cancelar reserva própria |
+
+Exemplo de corpo para criar ou editar horário:
+
+```json
+{"data":"2099-11-06","hora":"09:00"}
+```
+
+Cabeçalho das requisições protegidas:
+
+```http
+Authorization: Bearer <token recebido no login>
+```
+
+A API diferencia validação (400), autenticação (401), permissão (403), recurso inexistente (404), conflito (409), limite de tentativas (429) e falha interna (500).
+
+## Autenticação e segurança
+
+As senhas são armazenadas com hash bcrypt de custo 12. O login compara a senha com o hash e retorna um JWT HS256 válido por duas horas. O middleware verifica assinatura, expiração, emissor e audiência e consulta o usuário e seu nível no banco. O cadastro público não permite elevação para administrador.
+
+No Android, o token utiliza Expo SecureStore. A restauração de sessão consulta /auth/me. Na web, o token permanece em memória, exigindo novo login após recarregar a página. O logout remove a sessão local; um JWT já copiado permanece válido até expirar.
+
+As consultas SQL são parametrizadas. A reserva utiliza UPDATE condicional: a linha só é alterada se a vaga ainda estiver livre e futura. Duas solicitações concorrentes não confirmam a mesma vaga. O cancelamento exige o ID do cliente autenticado.
+
+## Instalação e execução
+
+### Pré-requisitos
+
+- Node.js 22.13 ou superior e npm; ambiente de referência: Node.js 24.13.1.
+- MySQL 8.0.16 ou superior e Workbench ou cliente de terminal.
+- Para Android: Expo Go compatível com SDK 58 ou build nativo.
+- Para compilação local: JDK e Android SDK compatíveis com o projeto.
+
+### 1. Obter o projeto
+
+```bash
+git clone https://github.com/rafaelmarmitt/barbearia-final.git
+cd barbearia-final
+npm ci
+```
+
+### 2. Criar o banco
+
+Execute database/barbearia.sql no MySQL Workbench. Pelo cliente MySQL de terminal:
+
+```sql
+SOURCE C:/caminho/barbearia-final/database/barbearia.sql;
+```
+
+Crie um usuário da aplicação, substituindo a senha do exemplo:
 
 ```sql
 CREATE USER 'barbearia'@'localhost' IDENTIFIED BY 'SUBSTITUA_POR_SUA_SENHA_LOCAL';
 GRANT SELECT, INSERT, UPDATE, DELETE ON barbearia_agenda.* TO 'barbearia'@'localhost';
 ```
 
-Se usar DB_HOST=127.0.0.1 e sua instalação distinguir esse host de localhost, crie/conceda acesso para o host correspondente. Para testes que criam bancos temporários, use uma conta separada com essa permissão.
+O host autorizado no MySQL deve corresponder à configuração da conexão.
 
-Também é possível copiar `.env.example` da raiz para `.env` e definir EXPO_PUBLIC_API_URL antes de iniciar ou compilar. Essa variável é pública e contém somente a URL; nunca coloque segredos nela. A configuração feita na tela fica salva no aparelho e prevalece sobre o valor de build.
+### 3. Configurar a API
 
-O app precisa de API e banco disponíveis; instalar o APK não instala MySQL no celular. Para acesso fora da rede local, hospede a API com HTTPS e configure a URL. HTTP foi habilitado no Android para demonstração em rede local; use HTTPS com dados reais.
+Copie backend/.env.example para backend/.env. No CMD do Windows:
 
-## Fluxo e telas
-
-```text
-Entrada → Criar conta → Entrada
-Entrada → Cliente → Horários → Meus agendamentos → Cancelar
-Entrada → Administrador → Painel → Abrir/Editar horário
-Painel → Excluir vaga livre (com confirmação)
-Sair / JWT expirado → Entrada
+```cmd
+copy backend\.env.example backend\.env
 ```
 
-As listas têm atualização manual e são recarregadas ao receber foco. Há filtros por data no cliente e por próximos/reservados/todos no painel. Cancelamento e exclusão pedem confirmação dentro da tela. Campos têm rótulos, botões com área mínima de 48 pontos e estados de carregamento, erro e vazio.
-
-## Arquitetura
-
-```text
-React Native + Navigation → services/api.js → fetch + Bearer JWT
-  → Express (routes em app.js) → controllers → repository.js
-  → mysql2/promise → MySQL (InnoDB)
-```
-
-| Pasta/arquivo | Responsabilidade |
+| Variável | Configuração |
 |---|---|
-| App.js | Navegação, restauração e encerramento da sessão, estado da agenda |
-| screens/ | Login/cadastro, vagas, reservas, painel e formulário |
-| components/ | Componentes visuais e elementos compartilhados da agenda |
-| services/ | fetch, armazenamento e contexto |
-| backend/app.js | Routers REST, limites de tentativas e tratamento de erros |
-| backend/controllers/ | Validação e regras das operações |
-| backend/middlewares/ | JWT e autorização administrativa |
-| backend/repository.js | Consultas SQL parametrizadas e mutações atômicas |
-| database/barbearia.sql | Esquema, chave estrangeira, índices e restrições |
-| backend/tests/ e scripts/testar-web.js | Testes HTTP, integração MySQL e interface |
-| docs/ | Requisitos, modelagem, critérios e material de defesa |
+| PORT | Porta HTTP da API; padrão 3000 |
+| DB_HOST | Endereço do MySQL |
+| DB_PORT | Porta do MySQL; padrão 3306 |
+| DB_USER | Usuário da aplicação |
+| DB_PASSWORD | Senha do usuário MySQL |
+| DB_NAME | barbearia_agenda |
+| JWT_SECRET | Segredo aleatório para assinatura dos tokens |
+| TZ | America/Sao_Paulo |
 
-## Autenticação e sessão
+Gere um segredo para JWT_SECRET:
 
-Cadastro público cria clientes com bcrypt (custo 12). O login retorna JWT HS256 com validade de duas horas, emissor e audiência verificados. O aplicativo envia `Authorization: Bearer TOKEN` nas chamadas protegidas. O middleware lê o usuário atual do banco, inclusive o nível, a cada requisição. Hash nunca é retornado ao app.
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+```
 
-No Android, o token fica no Expo SecureStore e a sessão é restaurada consultando `/auth/me`. Na web, fica apenas em memória: recarregar exige novo login. Logout apaga a sessão local; como os JWTs são stateless, um token previamente copiado continua válido até expirar. Erros 401 levam à tela de entrada. O limite simples de tentativas é por IP e processo (30 em 15 minutos), adequado à demonstração; uma publicação com múltiplas instâncias precisa de limitação compartilhada.
+Credenciais ficam no .env local, excluído do versionamento. Os arquivos .env.example documentam as variáveis.
 
-## Testes
+### 4. Criar o administrador e iniciar a API
+
+```bash
+npm run criar-admin
+npm run api
+```
+
+O comando solicita nome, e-mail e senha do administrador. Não existe conta administrativa padrão. A senha aparece durante a digitação no terminal e é persistida como hash.
+
+Para conferir a conexão, acesse http://localhost:3000/saude. Resposta esperada:
+
+```json
+{"status":"ok","banco":"MySQL"}
+```
+
+### 5. Iniciar o aplicativo e configurar a conexão
+
+Em outro terminal:
+
+```bash
+npm start
+```
+
+Para o navegador:
+
+```bash
+npm run web
+```
+
+Na entrada, abra **Configurar conexão com a API**:
+
+| Ambiente | Endereço de exemplo |
+|---|---|
+| Navegador no computador da API | http://localhost:3000 |
+| Emulador Android padrão | http://10.0.2.2:3000 |
+| Celular na mesma rede | http://IP-DO-COMPUTADOR:3000 |
+| API hospedada | Endereço HTTPS do servidor |
+
+No celular, localhost aponta para o próprio aparelho. Na rede local, computador e celular precisam se comunicar e a porta da API deve estar acessível.
+
+Também é possível definir EXPO_PUBLIC_API_URL no .env da raiz antes de iniciar ou compilar. Essa variável contém somente a URL pública. A configuração salva pela tela tem prioridade.
+
+### 6. Utilizar a agenda
+
+Entre como administrador e abra horários futuros. Saia, cadastre um cliente e faça uma reserva. Consulte Meus agendamentos para acompanhar ou cancelar. No painel administrativo, confira o cliente vinculado à vaga.
+
+## Desenvolvimento em quatro entregas
+
+### Entrega 1 — Proposta e estrutura inicial
+
+Definição do problema, público, justificativa, solução, funcionalidades e permissões. Organização do projeto Expo com telas e componentes, React Navigation e identidade visual.
+
+**Elementos do projeto:** proposta neste README, estrutura de pastas, entrada, agenda, reservas, painel administrativo e formulário de horário.
+
+### Entrega 2 — Modelagem, banco e integração
+
+Modelagem de usuários e horários, script MySQL, estrutura da API Express e integração por fetch.
+
+**Elementos do projeto:** database/barbearia.sql, backend/database.js, repository.js, controllers, routers e services/api.js.
+
+### Entrega 3 — Autenticação, permissões e CRUD
+
+Cadastro e login com hash, geração e validação de JWT, Bearer Token, gerenciamento da sessão, dois níveis de acesso e CRUD integrado ao banco.
+
+**Elementos do projeto:** autenticação, SecureStore, middleware de autorização, manutenção da agenda, reserva atômica e cancelamento pelo proprietário.
+
+### Entrega 4 — Finalização, testes, build e apresentação
+
+Revisão dos fluxos e da interface, mensagens de retorno, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação, configuração Android e material de apresentação.
+
+**Elementos do projeto:** testes automatizados, comandos de verificação, perfis EAS, script de build local e roteiro de demonstração. Os procedimentos de geração e instalação do APK estão descritos na seção Android.
+
+A relação com os 17 indicadores está em [docs/ENTREGAS.md](docs/ENTREGAS.md).
+
+## Testes e verificações
 
 ```bash
 npm test
@@ -110,38 +314,100 @@ npm run typecheck
 npm run export:web
 ```
 
-MySQL real, com usuário autorizado a criar banco:
+O contrato HTTP cobre cadastro, login, hash, JWT inválido ou expirado, permissões, validação, CRUD, reservas concorrentes, privacidade e cancelamento pelo proprietário.
+
+Teste com MySQL real:
 
 ```bash
 npm run test:mysql
+```
+
+Teste dos fluxos da interface:
+
+```bash
 npx playwright install chromium
+npm run export:web
 npm run test:web
 ```
 
-Os dois últimos testes usam as credenciais de backend/.env ou variáveis de ambiente. `test:mysql` cria e remove `barbearia_agenda_test`; `test:web` cria e remove `barbearia_visual_test`, usa portas 3000 e 8080 e exige `dist/` gerado por `export:web`. Pare a API antes do teste web. Eles recusam banco de teste já existente, sem apagá-lo. Não use a conta restrita de produção nesses testes. Os resultados e limites de verificação estão em [VALIDACAO.md](VALIDACAO.md).
+Os testes MySQL e web utilizam backend/.env ou variáveis de ambiente e exigem uma conta com permissão para criar bancos temporários. Utilizam barbearia_agenda_test e barbearia_visual_test, respectivamente, removidos ao terminar. Uma base de teste já existente é recusada.
 
-## APK
+O teste web utiliza as portas 3000 e 8080; encerre a API antes de iniciá-lo. Percorre cadastro, login, reserva, cancelamento, logout, CRUD administrativo e retorno à entrada após resposta 401.
 
-Consulte [docs/BUILD_ANDROID.md](docs/BUILD_ANDROID.md) para build local ou EAS. O perfil preview em eas.json gera APK; production gera AAB. A URL da API pode ser ajustada no app após instalar. O status real do build desta entrega fica em VALIDACAO.md e não deve ser confundido com a existência de uma configuração EAS.
+Resultados e escopo: [VALIDACAO.md](VALIDACAO.md).
 
-## As quatro entregas
+## Android: geração e instalação do APK
 
-Os requisitos das quatro etapas e todos os indicadores foram mapeados em [docs/ENTREGAS.md](docs/ENTREGAS.md). O enunciado traz quatro indicadores nas etapas 1, 2 e 4, e **cinco na etapa 3**; o mapeamento contempla os 17.
-
-Material para apresentação: [docs/APRESENTACAO.md](docs/APRESENTACAO.md), com sequência de demonstração e perguntas de defesa. Modelagem e contrato: [docs/ESPECIFICACAO.md](docs/ESPECIFICACAO.md).
-
-## Enviar ao GitHub
-
-Preserve o repositório e o histórico da entrega 1. Copie o conteúdo deste projeto para a raiz do clone, incluindo .gitignore e arquivos .env.example. Não copie node_modules nem arquivos .env reais. Revise `git status` e `git diff`, execute as verificações e então:
+### EAS Build
 
 ```bash
-git add .
-git commit -m "Completa API MySQL, JWT, agenda e interface da barbearia"
-git push
+npx eas-cli login
+npx eas-cli build:configure
+npx eas-cli build --platform android --profile preview
 ```
 
-Confira os arquivos no GitHub. Publique o APK como anexo de uma Release, junto da identificação do commit correspondente, se o professor aceitar essa organização. Não crie commits retroativos para simular etapas: o histórico precisa refletir a evolução real. Este pacote não cria repositório remoto nem executa push. A atualização do GitHub e a apresentação são evidências do aluno, não algo que um ZIP comprove.
+O perfil preview de eas.json utiliza distribuição interna e gera .apk; production gera .aab. Configure EXPO_PUBLIC_API_URL antes do build ou a conexão pela tela do aplicativo após instalar.
 
-## Origem
+Ao concluir, baixe o APK pelo link informado pelo EAS. Para disponibilizar a versão no GitHub, anexe o arquivo a uma Release associada ao commit utilizado na compilação.
 
-A proposta de agendamento e o protótipo pertencem ao projeto fornecido pelo usuário. A loja-jwt é referência didática de estrutura e autenticação; esta aplicação usa regras próprias de disponibilidade, propriedade, concorrência e agenda, sem catálogo ou compra. A licença original foi preservada em LICENSE.
+### Build local no Windows
+
+Use uma pasta curta, sem acentos. Configure JAVA_HOME e ANDROID_HOME e disponibilize o JDK 17 exigido pelos plugins React Native. Quando necessário, informe seu caminho em JDK17_HOME.
+
+```bash
+npm run build:android:local
+```
+
+O script copia o APK para builds/barbearia-agenda.apk. O template local utiliza assinatura de desenvolvimento, adequada à demonstração acadêmica. A publicação em loja exige assinatura própria.
+
+Instruções do ambiente: [docs/BUILD_ANDROID.md](docs/BUILD_ANDROID.md).
+
+### Instalação e conferência
+
+Instale o APK em um Android compatível, configure a API e confira cadastro, login, reserva, cancelamento, encerramento e restauração da sessão. Como administrador, confira criação, edição e exclusão de vagas livres e proteção das reservadas.
+
+A API e o MySQL precisam permanecer acessíveis. O APK contém o aplicativo cliente, não o servidor e o banco. HTTP é permitido para demonstração na rede local; em hospedagem, utilize HTTPS.
+
+## Estrutura do repositório
+
+```text
+App.js                       Navegação, sessão e estado compartilhado
+screens/                     Telas da aplicação
+components/                  Componentes visuais reutilizáveis
+services/                    Cliente HTTP, token e contexto
+data/                        Formatação e ordenação de horários
+assets/                      Ícone e recursos visuais
+backend/
+  app.js                     Rotas e tratamento de erros
+  server.js                  Inicialização do servidor
+  config.js                  Variáveis de ambiente
+  database.js                Pool MySQL
+  controllers/               Validação e regras das operações
+  middlewares/               JWT e autorização administrativa
+  repository.js              SQL parametrizado
+  scripts/                   Criação de administrador
+  tests/                     Contratos HTTP e integração MySQL
+database/barbearia.sql        Estrutura do banco
+scripts/                     Teste web e build Android local
+plugins/                     Configuração nativa Android
+docs/                        Especificação, indicadores e apresentação
+eas.json                     Perfis de build
+.env.example                 URL pública da API
+backend/.env.example         Variáveis do servidor
+```
+
+## Apresentação e documentação
+
+- [Especificação técnica e modelagem](docs/ESPECIFICACAO.md).
+- [Entregas e indicadores](docs/ENTREGAS.md).
+- [Roteiro de apresentação e defesa](docs/APRESENTACAO.md).
+- [Build Android](docs/BUILD_ANDROID.md).
+- [Validação e testes](VALIDACAO.md).
+
+A demonstração contempla problema, solução, cadastro e login, dois perfis, CRUD, reservas e persistência no MySQL. A defesa técnica aborda hash, JWT, Bearer Token, middleware, autorização e prevenção de reservas concorrentes.
+
+## Referências e licença
+
+O projeto loja-jwt, utilizado como referência técnica nas aulas, apoia os conceitos de autenticação, API e organização da aplicação. A Barbearia Agenda aplica esses conceitos ao domínio de agendamento, com regras de disponibilidade, vínculo de reservas e concorrência.
+
+A licença do material-base está preservada em [LICENSE](LICENSE).
