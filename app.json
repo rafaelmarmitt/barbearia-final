@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Barbearia Agenda",
+    "slug": "barbearia-agenda",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "barbearia-agenda",
+    "android": {
+      "package": "com.barbeariaagenda.app",
+      "versionCode": 1,
+      "permissions": []
+    },
+    "plugins": [
+      "expo-secure-store",
+      "./plugins/withLocalApi.js"
+    ],
+    "icon": "./assets/icon.png",
+    "backgroundColor": "#121516"
+  }
+}

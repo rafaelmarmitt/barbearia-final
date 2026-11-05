@@ -1,0 +1,1 @@
+Ícone geométrico autoral: calendário em grafite e cobre com monograma BA. Gerado por desenho programático, sem fotografia ou imagem de terceiros. Letras rasterizadas com Segoe UI do Windows; fonte não distribuída.

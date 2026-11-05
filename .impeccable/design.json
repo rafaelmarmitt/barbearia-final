@@ -1,0 +1,8 @@
+{
+  "platform": "android",
+  "mode": "operate",
+  "colors": { "background": "#121516", "surface": "#1D2224", "text": "#F4EFE9", "muted": "#B8B7B1", "accent": "#E0A477", "border": "#363C3E", "error": "#FFB0A4" },
+  "spacing": [8, 12, 16, 20, 24, 40],
+  "radii": { "panel": 16, "control": 12 },
+  "controlMinHeight": 48
+}
