@@ -50,7 +50,7 @@ A proposta é reunir essas informações em uma aplicação compartilhada, permi
 - O cadastro público cria apenas clientes; administradores são cadastrados por um comando no servidor.
 - As reservas utilizam o ID do usuário, permitindo clientes com nomes iguais.
 
-A agenda utiliza o horário de São Paulo. Para o uso desta versão, mantenha o aparelho nesse mesmo fuso. Pagamentos, notificações e múltiplos profissionais ficam fora do escopo.
+A agenda utiliza o horário de São Paulo (UTC−03:00). A disponibilidade e a data sugerida para novas vagas seguem esse horário em qualquer fuso do aparelho. Pagamentos, notificações e múltiplos profissionais ficam fora do escopo.
 
 ## Tecnologias
 

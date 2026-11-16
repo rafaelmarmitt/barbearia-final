@@ -35,6 +35,8 @@ O MySQL de validação foi inicializado em diretório separado e porta 3307. Nen
 
 ## Interface
 
+Regressão de fuso: testes automatizados em UTC, São Paulo e Tóquio conferem a disponibilidade às 09h30 para uma vaga das 10h de São Paulo, o fechamento no minuto de início e a data sugerida perto da virada do ano.
+
 O teste Playwright usa o frontend exportado, API Express e MySQL real. Preenche os formulários e executa as ações pelos controles da interface. Conferiu ausência de erro JavaScript e de overflow horizontal nos dois tamanhos. As capturas de docs/telas são da web em largura de celular, não de aparelho físico. O conteúdo tem rolagem; a captura do viewport não inclui toda a página.
 
 ## Evidências externas ao pacote
