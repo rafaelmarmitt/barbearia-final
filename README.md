@@ -6,7 +6,7 @@ Projeto avaliativo de aplicação mobile com JWT e níveis de usuário.
 
 **Repositório:** [rafaelmarmitt/barbearia-final](https://github.com/rafaelmarmitt/barbearia-final)
 
-## Apresentação
+## Sobre o aplicativo
 
 A Barbearia Agenda centraliza a disponibilidade e as reservas de uma barbearia. O cliente consulta vagas, agenda um atendimento e acompanha suas reservas. O administrador organiza os horários e identifica os clientes de cada atendimento.
 
@@ -297,11 +297,11 @@ Cadastro e login com hash, geração e validação de JWT, Bearer Token, gerenci
 
 **Elementos do projeto:** autenticação, SecureStore, middleware de autorização, manutenção da agenda, reserva atômica e cancelamento pelo proprietário.
 
-### Entrega 4 — Finalização, testes, build e apresentação
+### Entrega 4 — Finalização, testes e build
 
-Revisão dos fluxos e da interface, mensagens de retorno, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação, configuração Android e material de apresentação.
+Revisão dos fluxos e da interface, mensagens de retorno, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação e configuração Android.
 
-**Elementos do projeto:** testes automatizados, comandos de verificação, perfis EAS, script de build local e roteiro de demonstração. Os procedimentos de geração e instalação do APK estão descritos na seção Android.
+**Elementos do projeto:** testes automatizados, comandos de verificação, perfis EAS e script de build local. Os procedimentos de geração e instalação do APK estão descritos na seção Android.
 
 A relação com os 17 indicadores está em [docs/ENTREGAS.md](docs/ENTREGAS.md).
 
@@ -408,15 +408,12 @@ eas.json                     Perfis de build
 backend/.env.example         Variáveis do servidor
 ```
 
-## Apresentação e documentação
+## Documentação
 
 - [Especificação técnica e modelagem](docs/ESPECIFICACAO.md).
 - [Entregas e indicadores](docs/ENTREGAS.md).
-- [Roteiro de apresentação e defesa](docs/APRESENTACAO.md).
 - [Build Android](docs/BUILD_ANDROID.md).
 - [Validação e testes](VALIDACAO.md).
-
-A demonstração contempla problema, solução, cadastro e login, dois perfis, CRUD, reservas e persistência no MySQL. A defesa técnica aborda hash, JWT, Bearer Token, middleware, autorização e prevenção de reservas concorrentes.
 
 ## Referências e licença
 
