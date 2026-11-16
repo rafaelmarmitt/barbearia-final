@@ -364,12 +364,12 @@ Instruções do ambiente: [docs/BUILD_ANDROID.md](docs/BUILD_ANDROID.md).
 
 ### Instalação e conferência
 
-O APK de demonstração é publicado na página de [Releases do repositório](https://github.com/rafaelmarmitt/barbearia-final/releases). Baixe o arquivo `barbearia-agenda-fc6d021.apk` da versão correspondente ao commit `fc6d021`.
+O pacote de demonstração é publicado na página de [Releases do repositório](https://github.com/rafaelmarmitt/barbearia-final/releases). Baixe `barbearia-agenda-v1.0.0-apk.zip`, da versão correspondente ao commit `fc6d021`, e extraia o arquivo `barbearia-agenda-fc6d021.apk` antes de instalar.
 
 No Android:
 
-1. Baixe o APK pelo navegador do celular ou transfira o arquivo para o aparelho.
-2. Abra o arquivo em **Downloads** ou no gerenciador de arquivos.
+1. Baixe o arquivo ZIP pelo navegador do celular ou transfira-o para o aparelho.
+2. Extraia o ZIP e abra o APK em **Downloads** ou no gerenciador de arquivos.
 3. Quando o Android solicitar, autorize a instalação de aplicativos por essa origem e toque em **Instalar**.
 4. Abra **Barbearia Agenda** e, na tela inicial, toque em **Configurar conexão com a API**.
 5. Informe `http://IP-DO-COMPUTADOR:3000`, com a API e o MySQL em execução no computador e ambos os dispositivos na mesma rede Wi-Fi.
