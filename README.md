@@ -364,7 +364,19 @@ Instruções do ambiente: [docs/BUILD_ANDROID.md](docs/BUILD_ANDROID.md).
 
 ### Instalação e conferência
 
-Instale o APK em um Android compatível, configure a API e confira cadastro, login, reserva, cancelamento, encerramento e restauração da sessão. Como administrador, confira criação, edição e exclusão de vagas livres e proteção das reservadas.
+O APK de demonstração é publicado na página de [Releases do repositório](https://github.com/rafaelmarmitt/barbearia-final/releases). Baixe o arquivo `barbearia-agenda-fc6d021.apk` da versão correspondente ao commit `fc6d021`.
+
+No Android:
+
+1. Baixe o APK pelo navegador do celular ou transfira o arquivo para o aparelho.
+2. Abra o arquivo em **Downloads** ou no gerenciador de arquivos.
+3. Quando o Android solicitar, autorize a instalação de aplicativos por essa origem e toque em **Instalar**.
+4. Abra **Barbearia Agenda** e, na tela inicial, toque em **Configurar conexão com a API**.
+5. Informe `http://IP-DO-COMPUTADOR:3000`, com a API e o MySQL em execução no computador e ambos os dispositivos na mesma rede Wi-Fi.
+
+O APK suporta Android 7.0 (API 24) ou superior e aparelhos `arm64-v8a` (maioria dos celulares atuais). Ele é assinado para demonstração acadêmica. Se houver uma versão anterior instalada com outra assinatura, desinstale-a antes de instalar esta.
+
+Depois da instalação, confira cadastro, login, reserva, cancelamento, encerramento e restauração da sessão. Como administrador, confira criação, edição e exclusão de vagas livres e proteção das reservadas.
 
 A API e o MySQL precisam permanecer acessíveis. O APK contém o aplicativo cliente, não o servidor e o banco. HTTP é permitido para demonstração na rede local; em hospedagem, utilize HTTPS.
 
