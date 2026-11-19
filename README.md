@@ -374,7 +374,7 @@ npx eas-cli build --platform android --profile preview
 
 O perfil preview de eas.json utiliza distribuição interna e gera .apk; production gera .aab. Configure EXPO_PUBLIC_API_URL antes do build ou a conexão pela tela do aplicativo após instalar.
 
-Ao concluir, baixe o APK pelo link informado pelo EAS. Para disponibilizar a versão no GitHub, anexe o arquivo a uma Release associada ao commit utilizado na compilação.
+Ao concluir, baixe o APK pelo link informado pelo EAS.
 
 ### Build local no Windows
 
@@ -390,12 +390,12 @@ Instruções do ambiente: [docs/BUILD_ANDROID.md](docs/BUILD_ANDROID.md).
 
 ### Instalação e conferência
 
-O APK da versão final é publicado na página de [Releases do repositório](https://github.com/rafaelmarmitt/barbearia-final/releases), na Release `v1.1.0`, associada ao commit da versão final. Baixe `barbearia-agenda-v1.1.0.zip` e extraia `barbearia-agenda-v1.1.0.apk` antes de instalar (o ZIP evita bloqueios de download de .apk em alguns navegadores). A versão anterior (v1.0.0, commit `fc6d021`) permanece no histórico de Releases.
+O APK é gerado a partir da versão final do repositório (tag `v1.1.0`) por um dos métodos acima: EAS Build ou build local.
 
 No Android:
 
-1. Baixe o arquivo ZIP pelo navegador do celular ou transfira-o para o aparelho.
-2. Extraia o ZIP e abra o APK em **Downloads** ou no gerenciador de arquivos.
+1. Baixe o APK pelo link do EAS no navegador do celular ou transfira o arquivo gerado para o aparelho.
+2. Abra o APK em **Downloads** ou no gerenciador de arquivos.
 3. Quando o Android solicitar, autorize a instalação de aplicativos por essa origem e toque em **Instalar**.
 4. Abra **Barbearia Agenda** e, na tela inicial, toque em **Configurar conexão com a API**.
 5. Informe `http://IP-DO-COMPUTADOR:3000`, com a API e o MySQL em execução no computador e ambos os dispositivos na mesma rede Wi-Fi.

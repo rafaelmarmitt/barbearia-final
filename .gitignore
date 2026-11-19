@@ -49,7 +49,7 @@ playwright-report/
 /ios
 /android
 
-# Build local e artefatos publicados como Release
+# Build local (APK e AAB não são versionados)
 .build-template/
 builds/*.apk
 builds/*.aab

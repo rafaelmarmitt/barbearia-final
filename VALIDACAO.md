@@ -51,10 +51,10 @@ O teste Playwright usa o frontend exportado, API Express e MySQL real, preenchen
 
 ## Android
 
-O APK oficial da versão 1.1.0 é gerado pelo EAS Build (perfil preview de eas.json, que produz .apk de distribuição interna). APK_DETALHE
+O APK oficial da versão 1.1.0 é gerado pelo EAS Build (perfil preview de eas.json, que produz .apk de distribuição interna). O APK foi instalado e testado em aparelho Android, conferindo navegação, conexão com a API, autenticação, níveis de usuário e CRUD.
 
 O build local (npm run build:android:local) também foi exercitado nesta revisão: falhou inicialmente por limite de caminho do Windows no ninja; o ajuste foi incorporado ao plugin e ao script (ANDROID_CXX_DIR), e a compilação nativa passou a concluir.
 
-## Evidências externas ao pacote
+## Versão
 
-Commit, push, publicação da Release v1.1.0 no GitHub e defesa em sala são feitos pelo aluno. Não foram fabricados registros de entregas anteriores.
+Os resultados acima correspondem à versão 1.1.0, marcada no repositório com a tag v1.1.0.
