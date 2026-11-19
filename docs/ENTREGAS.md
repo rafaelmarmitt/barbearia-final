@@ -36,8 +36,8 @@ Esta matriz relaciona cada indicador do projeto avaliativo às evidências prese
 |---|---|
 | 1. Atendimento ao problema | Agenda compartilhada, disponibilidade, proteção de vagas reservadas, reservas por identidade e liberação de vaga quando o barbeiro não puder atender |
 | 2. Testes e APK | VALIDACAO.md: resultados reais da versão 1.1.0, erros encontrados e corrigidos, APK gerado; BUILD_ANDROID.md traz reprodução |
-| 3. Demonstração/domínio | Tabela "Onde cada conceito está no código" no README; código comentado nos pontos de hash, JWT, Bearer e middleware; apresentação no Canva |
-| 4. Documentação/versionamento/defesa | README, CHANGELOG, especificação e esta matriz; apresentação no Canva; versão final marcada com a tag v1.1.0 |
+| 3. Demonstração/domínio | Tabela "Onde cada conceito está no código" no README; código comentado nos pontos de hash, JWT, Bearer e middleware; apresentação em PDF, entregue à parte |
+| 4. Documentação/versionamento/defesa | README, CHANGELOG, especificação e esta matriz; apresentação em PDF, entregue à parte; versão final marcada com a tag v1.1.0 |
 
 ## Roteiro da apresentação
 

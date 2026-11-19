@@ -315,7 +315,7 @@ Cadastro e login com hash, geração e validação de JWT, Bearer Token, gerenci
 
 ### Entrega 4 — Finalização, testes e build (versão 1.1.0)
 
-Revisão dos fluxos e da interface, correção de erros, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação e APK. A apresentação é feita à parte, no Canva.
+Revisão dos fluxos e da interface, correção de erros, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação e APK. A apresentação é entregue à parte, em PDF.
 
 **Revisão e correções da versão final:**
 
