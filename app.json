@@ -2,13 +2,13 @@
   "expo": {
     "name": "Barbearia Agenda",
     "slug": "barbearia-agenda",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "scheme": "barbearia-agenda",
     "android": {
       "package": "com.barbeariaagenda.app",
-      "versionCode": 1,
+      "versionCode": 2,
       "permissions": []
     },
     "plugins": [
@@ -16,6 +16,12 @@
       "./plugins/withLocalApi.js"
     ],
     "icon": "./assets/icon.png",
-    "backgroundColor": "#121516"
+    "backgroundColor": "#121516",
+    "extra": {
+      "eas": {
+        "projectId": "44849b60-1a5d-44d2-a3a1-c4da1cbb2017"
+      }
+    },
+    "owner": "rafamittt"
   }
 }

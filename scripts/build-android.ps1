@@ -1,9 +1,12 @@
-param([string]$Jdk17Path = $env:JDK17_HOME)
+# Gera o APK localmente. Arquiteturas padrão: arm64-v8a (celulares atuais) e x86_64 (emulador).
+param([string]$Jdk17Path = $env:JDK17_HOME, [string]$Arquiteturas = 'arm64-v8a,x86_64')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 Set-Location -LiteralPath $projectRoot
 if ($projectRoot -match '[^\x00-\x7F]') { throw 'No Windows, copie o projeto para um caminho sem acentos, por exemplo C:\barbearia-agenda, antes de compilar Android.' }
 if (-not $env:JAVA_HOME -or -not $env:ANDROID_HOME) { throw 'Configure JAVA_HOME (JDK compatível) e ANDROID_HOME (Android SDK) nesta sessão.' }
+# Pasta curta para os intermediários C++ (evita erro de caminho longo do ninja no Windows).
+if (-not $env:ANDROID_CXX_DIR) { $env:ANDROID_CXX_DIR = Join-Path $env:SystemDrive 'ba-cxx' }
 if ($Jdk17Path -and -not (Test-Path -LiteralPath (Join-Path $Jdk17Path 'bin/java.exe'))) { throw 'JDK17_HOME não aponta para um JDK 17 válido.' }
 & npx.cmd expo prebuild --platform android --no-install
 if ($LASTEXITCODE -ne 0) {
@@ -16,7 +19,7 @@ if ($LASTEXITCODE -ne 0) {
   & npx.cmd expo prebuild --platform android --no-install --no-clean
   if ($LASTEXITCODE -ne 0) { throw 'Falha no prebuild. Confira a mensagem do Expo.' }
 }
-$buildArgs = @('-p', 'android', 'assembleRelease', '--no-daemon')
+$buildArgs = @('-p', 'android', 'assembleRelease', '--no-daemon', "-PreactNativeArchitectures=$Arquiteturas")
 if ($Jdk17Path) { $buildArgs += "-Porg.gradle.java.installations.paths=$Jdk17Path" }
 & './android/gradlew.bat' @buildArgs
 if ($LASTEXITCODE -ne 0) { throw 'Falha no Gradle. Consulte a mensagem de erro acima.' }
