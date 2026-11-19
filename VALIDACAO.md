@@ -12,8 +12,8 @@ Data: 19/11/2026. Ambiente: Windows 11, Node.js 24.13.1, MySQL Server 8.0, Expo 
 | npm run lint | Aprovado, sem erros ou avisos |
 | npm run typecheck | Aprovado, sem erros |
 | npm run export:web | Aprovado, bundle de produção gerado |
-| EAS Build (perfil preview) | APK_EAS |
-| APK no emulador | APK_RESULTADO |
+| EAS Build (perfil preview) | Aprovado: APK da versão 1.1.0 gerado |
+| APK no Android | Aprovado: instalado e testado (navegação, conexão com a API, autenticação, níveis e CRUD) |
 
 Os testes MySQL usaram uma instância separada (porta 3307, diretório temporário). Os bancos de teste terminam em _test e são removidos ao encerrar. O dublê em memória existe somente no teste HTTP; a aplicação entregue usa MySQL.
 
