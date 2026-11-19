@@ -2,7 +2,7 @@
 
 ## Requisitos funcionais
 
-RF01 cadastrar cliente com nome, e-mail único e senha. RF02 autenticar e encerrar sessão. RF03 restaurar sessão Android enquanto JWT válido. RF04 consultar vagas futuras por data. RF05 reservar vaga livre de forma atômica. RF06 consultar reservas próprias, inclusive horários passados. RF07 cancelar apenas reserva própria futura. RF08 administrador consulta todos os horários e nomes dos clientes. RF09 criar horário futuro, válido e em hora cheia. RF10 editar vaga livre. RF11 excluir vaga livre com confirmação. RF12 comunicar erros, indisponibilidade e estados vazios. RF13 configurar e testar URL da API.
+RF01 cadastrar cliente com nome, e-mail único e senha. RF02 autenticar e encerrar sessão. RF03 restaurar sessão Android enquanto JWT válido. RF04 consultar vagas futuras por data. RF05 reservar vaga livre de forma atômica. RF06 consultar reservas próprias, inclusive horários passados. RF07 cancelar apenas reserva própria futura. RF08 administrador consulta todos os horários e nomes dos clientes. RF09 criar horário futuro, válido e em hora cheia. RF10 editar vaga livre. RF11 excluir vaga livre com confirmação. RF12 comunicar erros, indisponibilidade e estados vazios. RF13 configurar e testar URL da API. RF14 administrador libera reserva futura de cliente, com confirmação. RF15 atalhos de dia e hora ao abrir ou editar vaga.
 
 ## Regras e decisões
 
@@ -10,7 +10,7 @@ RF01 cadastrar cliente com nome, e-mail único e senha. RF02 autenticar e encerr
 - Um único barbeiro e serviço de uma hora: a combinação data/hora é única. Com múltiplos barbeiros, seria necessário incluir profissional_id na chave.
 - A interface mostra vagas futuras ao cliente. O backend também recusa reserva/cancelamento depois do início.
 - Não há status de conclusão: horários passados são identificados por data/hora. Não equivalem a atendimento comprovadamente realizado.
-- Editar ou remover vaga com cliente é bloqueado. O administrador não cancela reserva de cliente nesta versão.
+- Editar ou remover vaga com cliente é bloqueado. Para isso, o administrador primeiro libera a reserva (DELETE /horarios/:id/reserva), o que exige confirmação na interface e só vale para horários futuros.
 - Horário civil de São Paulo; aplicação Node usa America/Sao_Paulo e as conexões do servidor MySQL usam -03:00. Não há conversão de agenda para o fuso do viajante.
 - Logout local; token stateless expira em duas horas. Sem refresh token, recuperação de senha ou revogação individual nesta versão.
 
@@ -51,7 +51,7 @@ Um usuário pode reservar vários horários; um horário possui zero ou um clien
 | PUT /horarios/:id | Admin | data e hora; somente vaga livre |
 | DELETE /horarios/:id | Admin | Somente vaga livre |
 | POST /horarios/:id/reserva | Cliente | ID na URL; usuário vem do JWT |
-| DELETE /horarios/:id/reserva | Cliente | Somente própria reserva futura |
+| DELETE /horarios/:id/reserva | Cliente ou admin | Cliente: própria reserva futura. Admin: qualquer reserva futura |
 
 Exemplo de criação: `{"data":"2099-11-06","hora":"09:00"}`. Exemplo de cabeçalho protegido: `Authorization: Bearer <token recebido no login>`.
 
@@ -59,6 +59,6 @@ Códigos: 200 sucesso, 201 criado, 400 validação/JSON, 401 sessão ausente/inv
 
 ## Concorrência e privacidade
 
-Reserva usa `UPDATE horarios SET cliente_id=? WHERE id=? AND cliente_id IS NULL AND TIMESTAMP(data,hora)>NOW()`. O banco bloqueia e reavalia a condição na atualização: apenas um cliente altera a linha. affectedRows=0 gera conflito. Cancelamento exige cliente_id do usuário autenticado. Cadastro ignora qualquer campo nivel enviado.
+Reserva usa `UPDATE horarios SET cliente_id=? WHERE id=? AND cliente_id IS NULL AND TIMESTAMP(data,hora)>NOW()`. O banco bloqueia e reavalia a condição na atualização: apenas um cliente altera a linha. affectedRows=0 gera conflito. Cancelamento pelo cliente exige cliente_id do usuário autenticado; liberação pelo admin usa `cliente_id IS NOT NULL AND TIMESTAMP(data,hora)>NOW()`. Cadastro ignora qualquer campo nivel enviado.
 
 SQL é parametrizado, sem concatenação de dados da requisição. GET do cliente não expõe nomes, e-mails ou IDs de outros clientes e omite vagas reservadas por terceiros. A validação no app melhora a experiência; o servidor permanece a autoridade sobre as regras.

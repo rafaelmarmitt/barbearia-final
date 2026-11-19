@@ -1,50 +1,60 @@
-# Validação da versão 1.0.0
+# Validação da versão 1.1.0 (Entrega 4)
 
-Data: 05/11/2026. Ambiente: Windows, Node.js 24.13.1, MySQL 8.0.46. Verificações executadas sobre a versão desta entrega, com Expo SDK 58 e dependências alinhadas por expo install --check.
+Data: 19/11/2026. Ambiente: Windows 11, Node.js 24.13.1, MySQL Server 8.0, Expo SDK 58, React Native 0.88, Android SDK 36/37 e emulador Android 16 (API 36.1, x86_64).
 
 ## Resultados confirmados
 
 | Verificação | Resultado |
 |---|---|
-| npm test | Aprovado: 12 testes contabilizados pelo node:test (11 cenários e seu agrupador), zero falhas |
-| npm run test:mysql | Aprovado: o mesmo contrato com MySQL real, 12 testes contabilizados, zero falhas |
-| npm run test:web | Aprovado: fluxo real de cadastro/login, reserva/cancelamento, logout, admin e CRUD; retorno à entrada após HTTP 401 |
+| npm test | Aprovado: 20 testes (contrato HTTP com 13 cenários, validações e fuso da agenda), zero falhas |
+| npm run test:mysql | Aprovado: o mesmo contrato com MySQL real, 14 testes, zero falhas |
+| npm run test:web | Aprovado: cadastro/login, reserva/cancelamento, volta para horários, logout, admin libera reserva, criar com atalho/editar/excluir, retorno à entrada após HTTP 401, layout 390×844 e 1440×1000 |
 | npm run lint | Aprovado, sem erros ou avisos |
 | npm run typecheck | Aprovado, sem erros |
 | npm run export:web | Aprovado, bundle de produção gerado |
-| npx expo install --check | Dependências compatíveis, sem ajustes pendentes |
-| Revisão visual | Aprovada no escopo das capturas web 390×844 e 1440×1000; sem problemas materiais identificados |
+| EAS Build (perfil preview) | APK_EAS |
+| APK no emulador | APK_RESULTADO |
 
-O MySQL de validação foi inicializado em diretório separado e porta 3307. Nenhuma credencial do banco existente do usuário foi utilizada e nenhuma tabela de seu banco foi alterada. Os testes criam bancos exclusivos terminados em _test e os removem ao encerrar. Não há banco em memória substituindo MySQL na aplicação entregue: o dublê em memória existe somente no teste HTTP.
+Os testes MySQL usaram uma instância separada (porta 3307, diretório temporário). Os bancos de teste terminam em _test e são removidos ao encerrar. O dublê em memória existe somente no teste HTTP; a aplicação entregue usa MySQL.
+
+## Erros encontrados nos testes da versão final e corrigidos
+
+| Problema | Causa | Correção |
+|---|---|---|
+| "Escolher outro horário" abria uma nova cópia da tela de horários a cada toque | No React Navigation 7, `navigate` não volta para uma tela existente da pilha | `navigation.popTo('Horarios')` em MeusAgendamentos |
+| Ao voltar para Horários, o aviso "Reserva confirmada" de uma ação anterior continuava visível, mesmo após cancelar | O estado da tela era preservado na pilha | Hook `useLimparAoFocar` limpa avisos ao receber foco (Horários e Painel) |
+| `npm run criar-admin` não concluía com entrada redirecionada (pipe) | `readline.question` perdia linhas já recebidas | Leitura linha a linha com iterador assíncrono |
+| Administrador não tinha como liberar uma vaga reservada (barbeiro indisponível) | Regra ausente | `DELETE /horarios/:id/reserva` aceita admin para qualquer reserva futura, com confirmação na interface |
 
 ## Cenários de API exercitados
 
-- Cadastro inválido, cadastro válido, e-mail duplicado e tentativa de criar admin via corpo público.
+- Cadastro inválido, válido, e-mail duplicado e tentativa de criar admin via corpo público.
 - Hash diferente da senha e comparação bcrypt válida.
-- Login incorreto e correto, ausência de hash na resposta, JWT emitido.
-- Token ausente, adulterado ou expirado, e consulta de sessão válida.
-- Cliente impedido de criar, editar ou excluir horários.
+- Login incorreto e correto, ausência de hash na resposta, JWT emitido com emissor correto.
+- Token ausente, adulterado, malformado, expirado e enviado com esquema diferente de Bearer.
+- Cliente impedido de criar, editar ou excluir horários; admin impedido de reservar.
 - Data impossível, data passada, minuto diferente de zero e duplicidade de data/hora.
 - Criação, leitura, edição, identificador inválido e recurso inexistente.
 - Duas reservas simultâneas: exatamente uma resposta 200 e uma 409.
 - Reserva de terceiro ausente da lista do cliente, sem exposição de nome/ID do dono.
 - Tentativa de cancelar reserva alheia rejeitada.
-- Vaga reservada protegida contra edição/exclusão; admin não faz reserva como cliente.
-- Cancelamento pelo dono, nova reserva, novo cancelamento e exclusão da vaga.
+- Vaga reservada protegida contra edição/exclusão; admin libera a reserva e a vaga volta a ser editável.
+- Admin recebe o nome do cliente; /auth/me devolve o nível sem hash.
+- Cancelamento pelo dono, nova reserva, liberação de vaga livre recusada (409) e exclusão.
 - JSON malformado e rota inexistente.
 
 ## Interface
 
-Regressão de fuso: testes automatizados em UTC, São Paulo e Tóquio conferem a disponibilidade às 09h30 para uma vaga das 10h de São Paulo, o fechamento no minuto de início e a data sugerida perto da virada do ano.
+Regressão de fuso: testes em horário simulado conferem a disponibilidade às 09h30 para uma vaga das 10h de São Paulo, o fechamento no minuto de início, a data sugerida na virada do ano e os atalhos de data.
 
-O teste Playwright usa o frontend exportado, API Express e MySQL real. Preenche os formulários e executa as ações pelos controles da interface. Conferiu ausência de erro JavaScript e de overflow horizontal nos dois tamanhos. As capturas de docs/telas são da web em largura de celular, não de aparelho físico. O conteúdo tem rolagem; a captura do viewport não inclui toda a página.
-
-## Evidências externas ao pacote
-
-Commit, push, conferência do GitHub e defesa em sala não foram executados. Preserve o histórico original e publique a evolução real. Não foram fabricadas entregas retroativas ou registros de avaliação.
+O teste Playwright usa o frontend exportado, API Express e MySQL real, preenchendo formulários e acionando os controles da interface. Conferiu ausência de erro JavaScript e de overflow horizontal nos dois tamanhos. As capturas de docs/telas são da web em largura de celular.
 
 ## Android
 
-APK não incluído, conforme solicitação do usuário em 05/11/2026: a geração será feita pelo próprio aluno posteriormente. O projeto inclui eas.json, plugin de configuração Android e script de build local. Foram resolvidos ajustes de compatibilidade de dependências e de caminho do Windows durante a preparação; a compilação não foi concluída nem a instalação nativa validada.
+O APK oficial da versão 1.1.0 é gerado pelo EAS Build (perfil preview de eas.json, que produz .apk de distribuição interna). APK_DETALHE
 
-O bundle JavaScript de produção para Android foi gerado com sucesso durante a tentativa local, mas isso não equivale a um APK instalável. SecureStore, teclado, barras do sistema e navegação no dispositivo ainda devem ser verificados no build final. Consulte docs/BUILD_ANDROID.md. A entrega 4 depende também do APK futuro, do push ao GitHub e da defesa do aluno.
+O build local (npm run build:android:local) também foi exercitado nesta revisão: falhou inicialmente por limite de caminho do Windows no ninja; o ajuste foi incorporado ao plugin e ao script (ANDROID_CXX_DIR), e a compilação nativa passou a concluir.
+
+## Evidências externas ao pacote
+
+Commit, push, publicação da Release v1.1.0 no GitHub e defesa em sala são feitos pelo aluno. Não foram fabricados registros de entregas anteriores.

@@ -15,7 +15,7 @@ O perfil EAS preview gera APK instalável. A configuração de build não compro
 
 Requer JDK compatível, Android SDK e ferramentas compatíveis com o SDK Expo/RN do lockfile. Android Studio inclui JDK em sua pasta jbr. Configure JAVA_HOME e ANDROID_HOME para sua instalação.
 
-No Windows, use uma pasta curta e sem acentos, como `C:\barbearia-agenda`. O Android Gradle Plugin recusa caminhos com caracteres não ASCII. O build também precisa de JDK 17 para compilar os plugins React Native, além da JVM compatível usada pelo Gradle. Se instalado fora dos locais detectados automaticamente, defina JDK17_HOME e use `npm run build:android:local`.
+No Windows, use uma pasta curta e sem acentos, como `C:\barbearia-agenda`. O Android Gradle Plugin recusa caminhos com caracteres não ASCII. O build também precisa de JDK 17 para compilar os plugins React Native, além da JVM compatível usada pelo Gradle. Se instalado fora dos locais detectados automaticamente, defina JDK17_HOME e use `npm run build:android:local`. O script compila para arm64-v8a e x86_64 por padrão; use `-Arquiteturas` para alterar.
 
 ```powershell
 npm ci
@@ -29,7 +29,7 @@ Se a geração do template nativo terminar sem MainApplication (falha observada 
 
 Se a JVM falhar ao estabelecer conexão loopback por caminho temporário longo no Windows, a execução pode definir JAVA_TOOL_OPTIONS com `-Djava.io.tmpdir=C:\jwt-build-temp -Djdk.net.unixdomain.tmpdir=C:\jwt-build-temp`, após criar essa pasta. São opções da sessão de build; não altere configurações globais da máquina sem necessidade.
 
-O plugin plugins/withLocalApi.js permite HTTP local no Android e configura CMAKE_OBJECT_PATH_MAX=128 para encurtar os caminhos de objetos C++ gerados no Windows. O mecanismo de encurtamento é descrito na [documentação do CMake](https://cmake.org/cmake/help/latest/variable/CMAKE_OBJECT_PATH_MAX.html). Não embuta JWT_SECRET ou credenciais do banco no build. A única configuração pública é a URL da API.
+O plugin plugins/withLocalApi.js permite HTTP local no Android, configura CMAKE_OBJECT_PATH_MAX=230 para encurtar os caminhos de objetos C++ e, quando a variável ANDROID_CXX_DIR está definida, move a pasta intermediária .cxx para esse caminho curto. O script de build define ANDROID_CXX_DIR como `C:\ba-cxx` por padrão. Sem isso, o ninja falha com "mkdir(...): No such file or directory" ao compilar react-native-safe-area-context no Windows. O mecanismo de encurtamento é descrito na [documentação do CMake](https://cmake.org/cmake/help/latest/variable/CMAKE_OBJECT_PATH_MAX.html). Não embuta JWT_SECRET ou credenciais do banco no build. A única configuração pública é a URL da API.
 
 ## Verificar no aparelho
 

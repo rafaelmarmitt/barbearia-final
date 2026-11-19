@@ -16,6 +16,7 @@ A interface utiliza grafite e cobre, com destaque para data, hora, disponibilida
   <img src="docs/telas/01-login-mobile.png" width="200" alt="Tela de entrada" />
   <img src="docs/telas/02-agenda-mobile.png" width="200" alt="Agenda do cliente" />
   <img src="docs/telas/04-admin-mobile.png" width="200" alt="Painel administrativo" />
+  <img src="docs/telas/05-horario-mobile.png" width="200" alt="Abertura de horário com atalhos" />
 </p>
 
 Capturas da versão web em tamanho de celular, com dados de teste.
@@ -46,7 +47,8 @@ A proposta é reunir essas informações em uma aplicação compartilhada, permi
 - A combinação de data e hora identifica uma vaga única.
 - Reservas são permitidas apenas para vagas futuras e livres.
 - O cliente cancela somente a própria reserva, antes do início do atendimento.
-- Horários reservados ficam protegidos contra edição e exclusão.
+- O administrador pode liberar uma reserva futura (por exemplo, quando o barbeiro não puder atender); a vaga volta a ficar livre.
+- Horários reservados ficam protegidos contra edição e exclusão; para alterá-los, o administrador libera a reserva antes.
 - O cadastro público cria apenas clientes; administradores são cadastrados por um comando no servidor.
 - As reservas utilizam o ID do usuário, permitindo clientes com nomes iguais.
 
@@ -74,7 +76,7 @@ A agenda utiliza o horário de São Paulo (UTC−03:00). A disponibilidade e a d
 | Login e logout | Sim | Sim |
 | Consulta da agenda | Vagas livres e próprias reservas | Todos os horários e clientes |
 | Reserva | Vaga futura e livre | Não |
-| Cancelamento | Apenas reserva própria futura | Não |
+| Cancelamento de reserva | Apenas reserva própria futura | Qualquer reserva futura (liberar vaga) |
 | Criação de horário | Não | Sim |
 | Edição e exclusão | Não | Apenas horários livres |
 
@@ -82,7 +84,7 @@ O backend verifica o token, consulta o usuário no banco e valida seu nível ant
 
 ## Funcionalidades e navegação
 
-O cliente pode cadastrar uma conta, entrar, filtrar vagas por data, reservar, consultar seus agendamentos e cancelar com confirmação. O administrador consulta os próximos horários, as reservas e a agenda completa, além de criar, editar e excluir vagas livres.
+O cliente pode cadastrar uma conta, entrar, filtrar vagas por data, reservar, consultar seus agendamentos e cancelar com confirmação. O administrador vê o resumo de vagas livres e reservas futuras, consulta os próximos horários, as reservas e a agenda completa, cria vagas com atalhos de dia e hora, edita e exclui vagas livres e libera reservas com confirmação.
 
 As telas incluem atualização manual e ao receber foco, configuração do endereço da API e mensagens de carregamento, erro, sucesso e lista vazia.
 
@@ -93,9 +95,10 @@ Entrada
   |                 |                  |
   |              Reservar           Cancelar
   +-- Administrador --> Painel administrativo
-                           +-- Abrir horário
+                           +-- Abrir horário (atalhos de dia/hora)
                            +-- Editar vaga livre
                            +-- Excluir vaga livre
+                           +-- Liberar vaga reservada
 
 Sair ou receber resposta de sessão inválida --> Entrada
 ```
@@ -107,7 +110,7 @@ React Native + Navigation
         |
         | fetch + JSON + Bearer Token
         v
-API Express: rotas e middleware
+API Express: routes/ + middlewares/ (JWT, nível, limite)
         |
         v
 Controllers: validação e regras
@@ -146,7 +149,7 @@ O esquema utiliza chave estrangeira, índice por cliente, unicidade de data/hora
 | PUT | /horarios/:id | Administrador | Editar vaga livre |
 | DELETE | /horarios/:id | Administrador | Excluir vaga livre |
 | POST | /horarios/:id/reserva | Cliente | Reservar vaga |
-| DELETE | /horarios/:id/reserva | Cliente | Cancelar reserva própria |
+| DELETE | /horarios/:id/reserva | Cliente ou Administrador | Cliente cancela a própria; admin libera qualquer reserva futura |
 
 Exemplo de corpo para criar ou editar horário:
 
@@ -168,7 +171,20 @@ As senhas são armazenadas com hash bcrypt de custo 12. O login compara a senha 
 
 No Android, o token utiliza Expo SecureStore. A restauração de sessão consulta /auth/me. Na web, o token permanece em memória, exigindo novo login após recarregar a página. O logout remove a sessão local; um JWT já copiado permanece válido até expirar.
 
-As consultas SQL são parametrizadas. A reserva utiliza UPDATE condicional: a linha só é alterada se a vaga ainda estiver livre e futura. Duas solicitações concorrentes não confirmam a mesma vaga. O cancelamento exige o ID do cliente autenticado.
+As consultas SQL são parametrizadas. A reserva utiliza UPDATE condicional: a linha só é alterada se a vaga ainda estiver livre e futura. Duas solicitações concorrentes não confirmam a mesma vaga. O cancelamento pelo cliente exige o ID do cliente autenticado; a liberação pelo administrador exige perfil admin lido do banco.
+
+### Onde cada conceito está no código
+
+| Conceito | Arquivo |
+|---|---|
+| Hash da senha (bcrypt) | backend/controllers/auth.js (cadastrar e login) |
+| Geração do JWT | backend/controllers/auth.js (login) |
+| Validação do JWT e Bearer Token | backend/middlewares/auth.js (autenticar) |
+| Controle de nível | backend/middlewares/auth.js (somenteAdmin, somenteCliente) |
+| Rotas protegidas | backend/routes/horarios.js e backend/routes/auth.js |
+| Envio do Bearer pelo app | services/api.js (api) |
+| Armazenamento do token e logout | services/api.js (SecureStore) e App.js (sessão) |
+| SQL parametrizado e reserva atômica | backend/repository.js |
 
 ## Instalação e execução
 
@@ -297,11 +313,21 @@ Cadastro e login com hash, geração e validação de JWT, Bearer Token, gerenci
 
 **Elementos do projeto:** autenticação, SecureStore, middleware de autorização, manutenção da agenda, reserva atômica e cancelamento pelo proprietário.
 
-### Entrega 4 — Finalização, testes e build
+### Entrega 4 — Finalização, testes e build (versão 1.1.0)
 
-Revisão dos fluxos e da interface, mensagens de retorno, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação e configuração Android.
+Revisão dos fluxos e da interface, correção de erros, organização do código, testes de autenticação, permissões, CRUD e concorrência, documentação e APK. A apresentação é feita à parte, no Canva.
 
-**Elementos do projeto:** testes automatizados, comandos de verificação, perfis EAS e script de build local. Os procedimentos de geração e instalação do APK estão descritos na seção Android.
+**Revisão e correções da versão final:**
+
+- Código reorganizado: rotas em backend/routes/, middlewares separados (JWT, nível e limite de tentativas), validações reutilizadas e comentários explicando hash, JWT, Bearer Token e middleware.
+- Correção: "Escolher outro horário" empilhava uma nova tela a cada toque (React Navigation 7); agora volta para a tela existente.
+- Correção: avisos antigos ("Reserva confirmada") permaneciam ao voltar para a tela; agora são limpos ao receber foco.
+- Nova função: administrador libera reserva futura de cliente, com confirmação.
+- Interface: atalhos de dia e hora ao abrir vagas, resumo de vagas livres e reservas no painel, botão "Voltar sem salvar" e validação de senha curta no cadastro.
+- Remoção de código herdado do modelo de loja (função de moeda não utilizada).
+- Testes ampliados: liberação pelo admin, esquema Bearer obrigatório, validações e atalhos de data; o teste web cobre a liberação.
+
+**Elementos do projeto:** testes automatizados, comandos de verificação, perfis EAS, script de build local, APK da versão 1.1.0 e [CHANGELOG.md](CHANGELOG.md).
 
 A relação com os 17 indicadores está em [docs/ENTREGAS.md](docs/ENTREGAS.md).
 
@@ -314,7 +340,7 @@ npm run typecheck
 npm run export:web
 ```
 
-O contrato HTTP cobre cadastro, login, hash, JWT inválido ou expirado, permissões, validação, CRUD, reservas concorrentes, privacidade e cancelamento pelo proprietário.
+O contrato HTTP cobre cadastro, login, hash, JWT inválido ou expirado, esquema Bearer, permissões, validação, CRUD, reservas concorrentes, privacidade, cancelamento pelo proprietário e liberação pelo administrador.
 
 Teste com MySQL real:
 
@@ -332,7 +358,7 @@ npm run test:web
 
 Os testes MySQL e web utilizam backend/.env ou variáveis de ambiente e exigem uma conta com permissão para criar bancos temporários. Utilizam barbearia_agenda_test e barbearia_visual_test, respectivamente, removidos ao terminar. Uma base de teste já existente é recusada.
 
-O teste web utiliza as portas 3000 e 8080; encerre a API antes de iniciá-lo. Percorre cadastro, login, reserva, cancelamento, logout, CRUD administrativo e retorno à entrada após resposta 401.
+O teste web utiliza as portas 3000 e 8080; encerre a API antes de iniciá-lo. Percorre cadastro, login, reserva, cancelamento, logout, liberação de reserva pelo administrador, CRUD administrativo com atalhos e retorno à entrada após resposta 401.
 
 Resultados e escopo: [VALIDACAO.md](VALIDACAO.md).
 
@@ -358,13 +384,13 @@ Use uma pasta curta, sem acentos. Configure JAVA_HOME e ANDROID_HOME e disponibi
 npm run build:android:local
 ```
 
-O script copia o APK para builds/barbearia-agenda.apk. O template local utiliza assinatura de desenvolvimento, adequada à demonstração acadêmica. A publicação em loja exige assinatura própria.
+O script gera APK para arm64-v8a (celulares) e x86_64 (emulador) e o copia para builds/barbearia-agenda.apk. Para outras arquiteturas: `powershell -File scripts/build-android.ps1 -Arquiteturas arm64-v8a,armeabi-v7a`. O template local utiliza assinatura de desenvolvimento, adequada à demonstração acadêmica. A publicação em loja exige assinatura própria.
 
 Instruções do ambiente: [docs/BUILD_ANDROID.md](docs/BUILD_ANDROID.md).
 
 ### Instalação e conferência
 
-O pacote de demonstração é publicado na página de [Releases do repositório](https://github.com/rafaelmarmitt/barbearia-final/releases). Baixe `barbearia-agenda-v1.0.0-apk.zip`, da versão correspondente ao commit `fc6d021`, e extraia o arquivo `barbearia-agenda-fc6d021.apk` antes de instalar.
+O APK da versão final é publicado na página de [Releases do repositório](https://github.com/rafaelmarmitt/barbearia-final/releases), na Release `v1.1.0`, associada ao commit da versão final. Baixe `barbearia-agenda-v1.1.0.zip` e extraia `barbearia-agenda-v1.1.0.apk` antes de instalar (o ZIP evita bloqueios de download de .apk em alguns navegadores). A versão anterior (v1.0.0, commit `fc6d021`) permanece no histórico de Releases.
 
 No Android:
 
@@ -390,19 +416,21 @@ services/                    Cliente HTTP, token e contexto
 data/                        Formatação e ordenação de horários
 assets/                      Ícone e recursos visuais
 backend/
-  app.js                     Rotas e tratamento de erros
+  app.js                     Montagem da API e tratamento de erros
   server.js                  Inicialização do servidor
+  routes/                    Rotas /auth e /horarios
   config.js                  Variáveis de ambiente
   database.js                Pool MySQL
   controllers/               Validação e regras das operações
-  middlewares/               JWT e autorização administrativa
+  middlewares/               JWT, nível de usuário e limite de tentativas
   repository.js              SQL parametrizado
   scripts/                   Criação de administrador
-  tests/                     Contratos HTTP e integração MySQL
+  tests/                     Contratos HTTP, validações e integração MySQL
 database/barbearia.sql        Estrutura do banco
 scripts/                     Teste web e build Android local
 plugins/                     Configuração nativa Android
-docs/                        Especificação, indicadores e apresentação
+docs/                        Especificação, indicadores e build
+CHANGELOG.md                 Histórico de versões
 eas.json                     Perfis de build
 .env.example                 URL pública da API
 backend/.env.example         Variáveis do servidor
@@ -414,6 +442,7 @@ backend/.env.example         Variáveis do servidor
 - [Entregas e indicadores](docs/ENTREGAS.md).
 - [Build Android](docs/BUILD_ANDROID.md).
 - [Validação e testes](VALIDACAO.md).
+- [Histórico de versões](CHANGELOG.md).
 
 ## Referências e licença
 
