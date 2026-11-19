@@ -1,4 +1,5 @@
-// Componentes visuais reutilizam Props; não escondem regras da aplicação.
+// Componentes visuais genéricos (página, painel, botão, campo, aviso).
+// Recebem tudo por props e não contêm regras de negócio.
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -54,10 +55,6 @@ export function Carregamento({ mensagem = 'Carregando…' }) {
   return <View style={ui.carregamento}><ActivityIndicator color={cores.verde} size="large" /><Text style={estilos.texto}>{mensagem}</Text></View>;
 }
 
-export function moeda(valor) {
-  return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-}
-
 export const estilos = StyleSheet.create({
   marca: { color: cores.texto, fontSize: 20, fontWeight: '700' },
   destaque: { color: cores.texto, fontSize: 40, lineHeight: 46, fontWeight: '800', letterSpacing: -1 },
@@ -66,8 +63,6 @@ export const estilos = StyleSheet.create({
   subtitulo: { color: cores.muted, fontSize: 16, lineHeight: 25 },
   texto: { color: cores.texto, fontSize: 15, lineHeight: 24 },
   linha: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 },
-  separador: { height: 1, backgroundColor: cores.borda, marginVertical: 12 },
-  etiqueta: { color: cores.verde, fontSize: 12, fontWeight: '700', letterSpacing: 1.5, textTransform: 'uppercase' },
 });
 
 const ui = StyleSheet.create({
