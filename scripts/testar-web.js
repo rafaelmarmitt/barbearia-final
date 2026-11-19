@@ -54,15 +54,25 @@ try {
   await pagina.getByRole('button', { name: 'Confirmar', exact: true }).click();
   await pagina.getByText('Reserva cancelada.', { exact: false }).waitFor();
   await pagina.getByRole('button', { name: 'Escolher outro horário' }).click();
+  // Mantém uma reserva para o administrador liberar adiante.
+  await pagina.getByRole('button', { name: 'Agendar 10:00', exact: true }).click();
+  await pagina.getByText('Reserva confirmada.', { exact: false }).waitFor();
   await pagina.getByRole('button', { name: 'Sair da conta', exact: true }).click();
   await pagina.getByLabel('E-mail', { exact: true }).fill('admin@teste.local');
   await pagina.getByLabel('Senha', { exact: true }).fill('SenhaTeste123');
   await pagina.getByRole('button', { name: 'Entrar na minha conta', exact: true }).click();
   await pagina.getByRole('button', { name: 'Abrir novo horário', exact: true }).waitFor();
   await pagina.screenshot({ path: 'test-results/04-admin-mobile.png', fullPage: true });
+  await pagina.getByText('Cliente: Rafael Teste', { exact: true }).waitFor();
+  await pagina.getByRole('button', { name: 'Liberar 10:00', exact: true }).click();
+  await pagina.getByRole('button', { name: 'Confirmar', exact: true }).click();
+  await pagina.getByText('Reserva cancelada. A vaga está livre novamente.', { exact: true }).waitFor();
+  await pagina.getByRole('button', { name: 'Editar 10:00', exact: true }).waitFor();
   await pagina.getByRole('button', { name: 'Abrir novo horário', exact: true }).click();
   await pagina.getByLabel('Data (AAAA-MM-DD)', { exact: true }).fill(data);
-  await pagina.getByLabel('Hora (HH:00)', { exact: true }).fill('15:00');
+  await pagina.getByRole('button', { name: '15:00', exact: true }).click();
+  assert.equal(await pagina.getByLabel('Hora (HH:00)', { exact: true }).inputValue(), '15:00', 'Atalho de hora preenche o campo');
+  await pagina.screenshot({ path: 'test-results/06-horario-mobile.png', fullPage: true });
   await pagina.getByRole('button', { name: 'Abrir horário', exact: true }).click();
   await pagina.getByRole('button', { name: 'Editar 15:00', exact: true }).click();
   await pagina.getByLabel('Hora (HH:00)', { exact: true }).fill('16:00');
@@ -81,7 +91,7 @@ try {
   await pagina.getByText('Sua sessão expirou. Entre novamente.', { exact: true }).waitFor();
   await pagina.unroute('**/horarios');
   assert.deepEqual(erros, [], 'Sem erros JavaScript');
-  console.log('PASSOU: cadastro, login, reserva, cancelamento, logout, perfil admin, criar/editar/excluir, retorno após 401 e layout mobile/desktop.');
+  console.log('PASSOU: cadastro, login, reserva, cancelamento, logout, perfil admin, liberar reserva, criar/editar/excluir, retorno após 401 e layout mobile/desktop.');
 } finally {
   await browser?.close();
   if (servidor) await new Promise(r => servidor.close(r));

@@ -71,10 +71,30 @@ export async function contrato(t, repo) {
     assert.equal((await req('/horarios/' + id, 'DELETE', null, admin)).status, 409);
     assert.equal((await req('/horarios/' + id + '/reserva', 'POST', null, admin)).status, 403);
   });
+  await t.test('admin libera reserva de cliente; depois a vaga volta a ser editável', async () => {
+    assert.equal((await req('/horarios/' + id + '/reserva', 'DELETE', null, admin)).status, 200);
+    const livre = (await req('/horarios', 'GET', null, admin)).body.find(h => h.id === id);
+    assert.equal(livre.cliente_id, null);
+    assert.equal((await req('/horarios/' + id, 'PUT', { data, hora: '11:00' }, admin)).status, 200);
+    assert.equal((await req('/horarios/' + id + '/reserva', 'POST', null, vencedor)).status, 200);
+    assert.equal((await req('/horarios/abc/reserva', 'DELETE', null, admin)).status, 400);
+    assert.equal((await req('/horarios/999999/reserva', 'DELETE', null, admin)).status, 404);
+  });
+  await t.test('admin recebe nome do cliente; GET /auth/me devolve o nível sem hash', async () => {
+    const reservado = (await req('/horarios', 'GET', null, admin)).body.find(h => h.id === id);
+    assert.equal(reservado.cliente, 'Cliente Teste');
+    const me = (await req('/auth/me', 'GET', null, admin)).body;
+    assert.equal(me.nivel, 'admin'); assert.equal(me.senha_hash, undefined);
+    assert.equal((await req('/horarios', 'GET', null, 'nao-e-um-jwt')).status, 401);
+    const r = await fetch(url + '/horarios', { headers: { Authorization: 'Basic ' + cliente } });
+    assert.equal(r.status, 401, 'Somente o esquema Bearer é aceito');
+  });
   await t.test('cancelamento libera vaga, nova reserva e exclusão completam fluxo', async () => {
     assert.equal((await req('/horarios/' + id + '/reserva', 'DELETE', null, vencedor)).status, 200);
     assert.equal((await req('/horarios/' + id + '/reserva', 'POST', null, perdedor)).status, 200);
     assert.equal((await req('/horarios/' + id + '/reserva', 'DELETE', null, perdedor)).status, 200);
+    // Vaga livre: não há reserva para o administrador liberar.
+    assert.equal((await req('/horarios/' + id + '/reserva', 'DELETE', null, admin)).status, 409);
     assert.equal((await req('/horarios/' + id, 'DELETE', null, admin)).status, 200);
     assert.equal((await req('/horarios', 'GET', null, admin)).body.length, 0);
   });

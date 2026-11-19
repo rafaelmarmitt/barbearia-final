@@ -15,6 +15,7 @@ function repositorioMemoria() {
     excluir: async id => { const i = horarios.findIndex(h => h.id === Number(id) && !h.cliente_id); if (i < 0) return 0; horarios.splice(i, 1); return 1; },
     reservar: async (id, cliente) => { const h = horarios.find(h => h.id === Number(id) && !h.cliente_id); if (!h) return 0; h.cliente_id = cliente; return 1; },
     cancelar: async (id, cliente) => { const h = horarios.find(h => h.id === Number(id) && h.cliente_id === cliente); if (!h) return 0; h.cliente_id = null; return 1; },
+    liberar: async id => { const h = horarios.find(h => h.id === Number(id) && h.cliente_id); if (!h) return 0; h.cliente_id = null; return 1; },
     saude: async () => [{ ok: 1 }],
   };
 }
